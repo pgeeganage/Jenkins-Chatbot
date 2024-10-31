@@ -62,25 +62,21 @@ function analyzeLogs(logs) {
   return suggestions.join('\n');
 }
 
-// Process chatbot message
+// Process the chatBot message
 app.get('/chatbot/message', async (req, res) => {
   const userMessage = req.query.text;
   let responseMessage = '';
 
   const split = userMessage.split(' ');
-  const jobType = split[0]; // build, deploy
-  const command = split[1]; // status, logs
-  const systemCode = split[2];
-  const jobName = split[3];
-  const branchName = split[4];
-  const buildNumber = split[5];
+  const jobType = split[0]; // build, deploy etc.
+  const command = split[1]; // status, logs etc.
+  const systemCode = split[2]; // CCP, etc.
+  const jobName = split[3]; // ces-enrichment-audit-ui, etc.
+  const branchName = split[4]; // main, develop, etc.
+  const buildNumber = split[5]; // 1, 2, etc.
 
-  console.log("branchName: " + branchName);
-  console.log("buildNumber: " + buildNumber);
-  console.log("userMessage.toLowerCase(): " + userMessage.toLowerCase());
   if (userMessage.toLowerCase().startsWith('build') || userMessage.toLowerCase().startsWith('deploy')) {
     const subCommand = userMessage.replace(jobType, '').trim();
-    console.log("subCommand: " + subCommand);
     if (subCommand.startsWith('status')) {
       try {
 
@@ -92,7 +88,6 @@ app.get('/chatbot/message', async (req, res) => {
                 ? `${JENKINS_URL}/job/${systemCode}/job/deploy/job/K8s-deploy-nonprod/${branchName}/api/json`
                 : `${JENKINS_URL}/job/${systemCode}/job/deploy/job/K8s-deploy-nonprod/lastBuild/api/json`);
 
-        console.log(buildUrl);
         const buildResponse = await axios.get(buildUrl, {
           auth: {
             username: JENKINS_USER,
@@ -106,9 +101,6 @@ app.get('/chatbot/message', async (req, res) => {
       }
     } else if (subCommand.startsWith('logs')) {
       try {
-        // const logUrl = buildNumber
-        //     ? `${JENKINS_URL}/job/${systemCode}/job/build/job/${jobName}/job/${branchName}/${buildNumber}/consoleText`
-        //     : `${JENKINS_URL}/job/${systemCode}/job/build/job/${jobName}/job/${branchName}/lastBuild/consoleText`;
 
         const logUrl = jobType === 'build'
             ? (buildNumber
@@ -171,7 +163,7 @@ function processLog(logLines) {
   });
 }
 
-// Serve the chatbot interface
+// Serve the Chatbot UI
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
